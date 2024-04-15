@@ -119,7 +119,7 @@ Function Protect-Privacy {
     }
 
     #Stops the Windows Feedback Experience from sending anonymous data
-    Write-Output "Stopping the Windows Feedback Experience program"
+    Write-Output "Stopping the Windows Feedback Experience program" | Out-File $LogPath -Append
     $Period1 = 'HKCU:\Software\Microsoft\Siuf'
     $Period2 = 'HKCU:\Software\Microsoft\Siuf\Rules'
     $Period3 = 'HKCU:\Software\Microsoft\Siuf\Rules\PeriodInNanoSeconds'
@@ -127,54 +127,54 @@ Function Protect-Privacy {
         mkdir $Period1 -ErrorAction SilentlyContinue
         mkdir $Period2 -ErrorAction SilentlyContinue
         mkdir $Period3 -ErrorAction SilentlyContinue
-        New-ItemProperty $Period3 -Name PeriodInNanoSeconds -Value 0 -Verbose -ErrorAction SilentlyContinue
+        New-ItemProperty $Period3 -Name PeriodInNanoSeconds -Value 0 -Verbose -ErrorAction SilentlyContinue | Out-File $LogPath -Append
     }
 
-    Write-Output "Adding Registry key to prevent bloatware apps from returning"
+    Write-Output "Adding Registry key to prevent bloatware apps from returning" | Out-File $LogPath -Append
     #Prevents bloatware applications from returning
     $registryPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\CloudContent"
     If (!(Test-Path $registryPath)) {
         Mkdir $registryPath -ErrorAction SilentlyContinue
-        New-ItemProperty $registryPath -Name DisableWindowsConsumerFeatures -Value 1 -Verbose -ErrorAction SilentlyContinue
+        New-ItemProperty $registryPath -Name DisableWindowsConsumerFeatures -Value 1 -Verbose -ErrorAction SilentlyContinue | Out-File $LogPath -Append
     }
 
-    Write-Output "Setting Mixed Reality Portal value to 0 so that you can uninstall it in Settings"
+    Write-Output "Setting Mixed Reality Portal value to 0 so that you can uninstall it in Settings" | Out-File $LogPath -Append
     $Holo = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Holographic'
     If (Test-Path $Holo) {
-        Set-ItemProperty $Holo -Name FirstRunSucceeded -Value 0 -Verbose
+        Set-ItemProperty $Holo -Name FirstRunSucceeded -Value 0 -Verbose | Out-File $LogPath -Append
     }
 
     #Disables live tiles
-    Write-Output "Disabling live tiles"
+    Write-Output "Disabling live tiles" | Out-File $LogPath -Append
     $Live = 'HKCU:\SOFTWARE\Policies\Microsoft\Windows\CurrentVersion\PushNotifications'
     If (!(Test-Path $Live)) {
         mkdir $Live -ErrorAction SilentlyContinue
-        New-ItemProperty $Live -Name NoTileApplicationNotification -Value 1 -Verbose
+        New-ItemProperty $Live -Name NoTileApplicationNotification -Value 1 -Verbose | Out-File $LogPath -Append
     }
 
     #Turns off Data Collection via the AllowTelemtry key by changing it to 0
-    Write-Output "Turning off Data Collection"
+    Write-Output "Turning off Data Collection" | Out-File $LogPath -Append
     $DataCollection = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\DataCollection'
     If (Test-Path $DataCollection) {
-        Set-ItemProperty $DataCollection -Name AllowTelemetry -Value 0 -Verbose
+        Set-ItemProperty $DataCollection -Name AllowTelemetry -Value 0 -Verbose | Out-File $LogPath -Append
     }
 
     #Disables People icon on Taskbar
-    Write-Output "Disabling People icon on Taskbar"
+    Write-Output "Disabling People icon on Taskbar" | Out-File $LogPath -Append
     $People = 'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced\People'
     If (Test-Path $People) {
-        Set-ItemProperty $People -Name PeopleBand -Value 0 -Verbose
+        Set-ItemProperty $People -Name PeopleBand -Value 0 -Verbose | Out-File $LogPath -Append
     }
 
     #Disables suggestions on start menu
-    Write-Output "Disabling suggestions on the Start Menu"
+    Write-Output "Disabling suggestions on the Start Menu" | Out-File $LogPath -Append
     $Suggestions = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\ContentDeliveryManager'
     If (Test-Path $Suggestions) {
-        Set-ItemProperty $Suggestions -Name SystemPaneSuggestionsEnabled -Value 0 -Verbose
+        Set-ItemProperty $Suggestions -Name SystemPaneSuggestionsEnabled -Value 0 -Verbose | Out-File $LogPath -Append
     }
 
 
-    Write-Output "Removing CloudStore from registry if it exists"
+    Write-Output "Removing CloudStore from registry if it exists" | Out-File $LogPath -Append
     $CloudStore = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\CloudStore'
     If (Test-Path $CloudStore) {
         Stop-Process -Name explorer -Force
@@ -204,16 +204,16 @@ Function FixWhitelistedApps {
 
     Param([switch]$Debloat)
 
-    If (!(Get-AppxPackage -AllUsers | Select Microsoft.Paint3D, Microsoft.MSPaint, Microsoft.WindowsCalculator, Microsoft.WindowsStore, Microsoft.MicrosoftStickyNotes, Microsoft.WindowsSoundRecorder, Microsoft.Windows.Photos)) {
+    If (!(Get-AppxPackage -AllUsers | Select-Object Microsoft.Paint3D, Microsoft.MSPaint, Microsoft.WindowsCalculator, Microsoft.WindowsStore, Microsoft.MicrosoftStickyNotes, Microsoft.WindowsSoundRecorder, Microsoft.Windows.Photos)) {
 
         #Credit to abulgatz for the 4 lines of code
-        Get-AppxPackage -allusers Microsoft.Paint3D | Foreach { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
-        Get-AppxPackage -allusers Microsoft.MSPaint | Foreach { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
-        Get-AppxPackage -allusers Microsoft.WindowsCalculator | Foreach { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
-        Get-AppxPackage -allusers Microsoft.WindowsStore | Foreach { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
-        Get-AppxPackage -allusers Microsoft.MicrosoftStickyNotes | Foreach { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
-        Get-AppxPackage -allusers Microsoft.WindowsSoundRecorder | Foreach { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
-        Get-AppxPackage -allusers Microsoft.Windows.Photos | Foreach { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
+        Get-AppxPackage -allusers Microsoft.Paint3D | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
+        Get-AppxPackage -allusers Microsoft.MSPaint | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
+        Get-AppxPackage -allusers Microsoft.WindowsCalculator | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
+        Get-AppxPackage -allusers Microsoft.WindowsStore | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
+        Get-AppxPackage -allusers Microsoft.MicrosoftStickyNotes | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
+        Get-AppxPackage -allusers Microsoft.WindowsSoundRecorder | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
+        Get-AppxPackage -allusers Microsoft.Windows.Photos | ForEach-Object { Add-AppxPackage -DisableDevelopmentMode -Register "$($_.InstallLocation)\AppXManifest.xml" }
     }
 }
 
@@ -238,18 +238,18 @@ Function CheckInstallService {
     }
 }
 
-Write-Output "Initiating Sysprep"
-Begin-SysPrep
-Write-Output "Removing bloatware apps."
-Start-Debloat
-Write-Output "Removing leftover bloatware registry keys."
-Remove-Keys
-Write-Output "Checking to see if any Whitelisted Apps were removed, and if so re-adding them."
-FixWhitelistedApps
-Write-Output "Stopping telemetry, disabling unneccessary scheduled tasks, and preventing bloatware from returning."
-Protect-Privacy
-Write-Output "Stopping Edge from taking over as the default PDF Viewer."
-Stop-EdgePDF
-CheckDMWService
-CheckInstallService
-Write-Output "Finished all tasks."
+Write-Output "Initiating Sysprep" | Out-File $LogPath -Append
+Begin-SysPrep | Out-File $LogPath -Append
+Write-Output "Removing bloatware apps." | Out-File $LogPath -Append
+Start-Debloat | Out-File $LogPath -Append
+Write-Output "Removing leftover bloatware registry keys." | Out-File $LogPath -Append
+Remove-Keys | Out-File $LogPath -Append
+Write-Output "Checking to see if any Whitelisted Apps were removed, and if so re-adding them." | Out-File $LogPath -Append
+FixWhitelistedApps | Out-File $LogPath -Append
+Write-Output "Stopping telemetry, disabling unneccessary scheduled tasks, and preventing bloatware from returning." | Out-File $LogPath -Append
+Protect-Privacy | Out-File $LogPath -Append
+Write-Output "Stopping Edge from taking over as the default PDF Viewer." | Out-File $LogPath -Append
+Stop-EdgePDF | Out-File $LogPath -Append
+CheckDMWService | Out-File $LogPath -Append
+CheckInstallService | Out-File $LogPath -Append
+Write-Output "Finished all tasks." | Out-File $LogPath -Append
